@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="AStar.cpp">
+      <Filter>PathFinding\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="OrthogonalJPS.cpp">
+      <Filter>PathFinding\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2D.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MapVec2i.h">
+      <Filter>PathFinding\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>PathFinding\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="PathfindingHeuristics.h">
+      <Filter>PathFinding\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="PathFinding.h">
+      <Filter>PathFinding</Filter>
+    </ClInclude>
+    <ClInclude Include="AStar.h">
+      <Filter>PathFinding\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="OrthogonalJPS.h">
+      <Filter>PathFinding\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2D.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="PathFinding">
+      <UniqueIdentifier>{fd97bda6-b2f8-4d84-8038-d7662164fc08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Map">
+      <UniqueIdentifier>{8cbf5c83-63f2-410d-aad6-f34bd928e8d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Heuristics">
+      <UniqueIdentifier>{b26ba909-1dd6-48e5-908e-a6ad6ad466ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Algorithms">
+      <UniqueIdentifier>{84990599-e978-4ee2-8be9-234ad0fa7d76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{9a033111-49e9-4683-97cf-ca6c9517b18c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{5e0f47ec-fe53-4520-9260-52ffaf612ad3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
