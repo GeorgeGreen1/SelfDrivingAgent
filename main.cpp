@@ -33,6 +33,7 @@
 #include <windows.h>
 #include <time.h>
 #include "Vector2D.h"
+#include "conio.h"
 #define M_PI 3.14159265358979323846
 #pragma warning(disable:4996)
 //#define WINVER 0x0500
@@ -56,6 +57,13 @@ vector<string> str_split(string str, char delimiter) {
 	return internal;
 }
 
+void waitToFinish() {
+	char user_exit;
+	cout << "Press any key to exit:";
+	while (!kbhit())
+	{
+	}
+}
 
 /*bool validBlock(int x, int y) {
 /*bool validBlock(int x, int y) {
@@ -100,23 +108,68 @@ Vector2D * getAllTrueBlocks(int n, int buffer[]) {
 	return instr;
 }
 
+int getBufArrPos(int x, int y) {
+	return (y * 30) + x;
+}
+
 
 Vector2D getMidCoords(float x, float y) {
 	return Vector2D((x * 40) + 20, (y * 40) + 20);
 }
 
-bool speedControl(float curr_x, float curr_y, float prev_x, float prev_y, bool going) {
-	float speed = sqrt(pow((curr_x - prev_x), 2) + pow((curr_y - prev_y), 2)) / 1000 * 36000;
+
+
+bool speedControl(Vector2D curr, Vector2D prev, bool going, float target) {
+	//cout << curr.get_x() << ", " << curr.get_y() << " | " << prev.get_x() << ", " << prev.get_y() << " \n";
+	float speed = sqrt(pow((curr.get_x() - prev.get_x()), 2) + pow((curr.get_y() - prev.get_y()), 2)) / 1000 * 36000;
 	bool goes = going;
-	if ((speed < 50) && (!going)) {
-		system("C:\\Users\\Jake\\source\\repos\\DriverAgent\\Debug\\greatqb.bat 1");
+	if ((speed < target) && (!going)) {
+		system("C:\\Users\\Jake\\source\\repos\\pathfinding-c\\x64\\Debug\\greatqb.bat 1");
 		goes = true;
 	}
-	if ((speed > 52) && (going)) {
-		system("C:\\Users\\Jake\\source\\repos\\DriverAgent\\Debug\\greatqb.bat 0");
+	if ((speed > (target + 2)) && (going)) {
+		system("C:\\Users\\Jake\\source\\repos\\pathfinding-c\\x64\\Debug\\greatqb.bat 0");
 		goes = false;
 	}
 	return goes;
+}
+
+int steering(float angle,int steering) {
+	int steers = steering;
+	string open = "open";
+	string right = "C:\\Program Files\\AutoHotkey\\scripts\\rightsteerOn.exe";
+	string left = "C:\\Program Files\\AutoHotkey\\scripts\\leftsteerOn.exe";
+	string off = "C:\\Program Files\\AutoHotkey\\scripts\\steerOff.exe";
+	wstring open_temp = wstring(open.begin(), open.end());
+	wstring right_temp = wstring(right.begin(), right.end());
+	wstring left_temp = wstring(left.begin(), left.end());
+	wstring off_temp = wstring(off.begin(), off.end());
+	LPCWSTR openw = open_temp.c_str();
+	LPCWSTR rightw = right_temp.c_str();
+	LPCWSTR leftw = left_temp.c_str();
+	LPCWSTR offw = off_temp.c_str();
+	if ((angle > 0.4)&&(angle < ((2 * M_PI) - 0.4))) {
+		if (angle < M_PI) {
+			if (steering == -1) {
+				ShellExecute(0, openw, offw, NULL, NULL, SW_SHOWNORMAL);
+			}
+			steers = 1;
+			ShellExecute(0, openw, rightw, NULL, NULL, SW_SHOWNORMAL);
+		}
+		else {
+			//cout << "Left Down \n";
+			if (steering == 1) {
+				ShellExecute(0, openw, offw, NULL, NULL, SW_SHOWNORMAL);
+			}
+			steers = -1;
+			ShellExecute(0, openw, leftw, NULL, NULL, SW_SHOWNORMAL);
+		}
+	}
+	else if ((steering)&& (((angle <= 0.4) || (angle >= ((2 * M_PI) - 0.4))))) {
+		steers = 0;
+		ShellExecute(0, openw, offw, NULL, NULL, SW_SHOWNORMAL);
+	}
+	return steers;
 }
 
 void PrintSolution(int n, int* pOutBuffer)
@@ -141,60 +194,72 @@ int FindPath(const int nStartX, const int nStartY,
 	PathFinding::OrthogonalJPS jps;
 	return jps.GetPath({ nStartX, nStartY }, { nTargetX, nTargetY }, { pMap, nMapWidth, nMapHeight }, pOutBuffer, nOutBufferSize);
 
-	/*PathFinding::AStar astar;
-	return astar.GetPath({ nStartX, nStartY }, { nTargetX, nTargetY }, { pMap, nMapWidth, nMapHeight }, pOutBuffer, nOutBufferSize);*/
+	//PathFinding::AStar astar;
+	//return astar.GetPath({ nStartX, nStartY }, { nTargetX, nTargetY }, { pMap, nMapWidth, nMapHeight }, pOutBuffer, nOutBufferSize);
 }
 
 
-int main() {
+void maze() {
 	string line;
 	FILE * pFile;
 	float in_arr[4];
 	vector<string> sep;
 	unsigned char pMap[] =
-	{ 1,0,0,1,1,1,1,0,1,0,0,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,
-	 1,1,1,0,1,0,1,0,0,1,0,1,0,0,1,1,1,0,1,0,1,1,0,1,1,1,1,0,0,1,
-	 1,0,0,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,0,
-	 1,1,1,0,0,1,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,1,0,1,0,0,1,1,
-	 1,0,1,1,0,1,1,0,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,1,
-	 1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,0,0,1,0,1,1,1,
-	 1,0,1,0,0,0,1,0,1,1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,1,1,1,1,0,1,
-	 1,1,1,0,1,1,0,0,0,0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,0,1,1,1,
-	 1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,0,1,1,0,0,0,
-	 1,0,1,1,1,1,1,0,1,1,0,0,1,1,0,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,
-	 1,1,1,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1,0,1,1,0,0,0,0,1,1,1,0,0,
-	 1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,
-	 0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,0,1,1,1,1,1,
-	 1,0,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,
-	 1,1,1,1,1,1,1,1,1,0,1,0,1,0,0,1,1,0,1,1,0,1,0,1,1,1,0,1,1,1,
-	 0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,1,
-	 1,1,1,1,1,1,1,1,0,1,0,1,1,1,1,0,0,1,1,1,0,1,0,0,1,1,0,1,1,0,
-	 1,1,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1,0,0,1,1,1,1,1,0,
-	 1,0,1,1,0,0,1,1,1,1,1,1,0,0,0,1,1,0,1,0,1,0,1,0,1,1,1,0,0,0,
-	 0,1,0,0,1,1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,0,1,0,1,1,1,1,0,0,
-	 1,1,0,0,1,1,1,1,0,0,1,1,1,0,1,0,0,1,1,0,0,1,1,1,0,1,1,0,1,0,
-	 1,1,1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,1,
-	 1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,0,1,0,1,1,0,1,1,0,1,
-	 1,1,1,0,1,1,0,0,0,1,1,1,1,0,1,1,1,0,1,1,0,0,1,1,1,0,1,1,1,1,
-	 1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,0,
-	 1,1,0,1,1,0,1,0,1,1,0,1,0,0,0,1,1,1,1,1,1,0,1,1,1,0,1,1,0,1,
-	 0,0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1,1,1,1,
-	 1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,
-	 1,1,0,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,1 };
+   { 1,0,0,1,1,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,
+	 1,1,0,0,0,1,1,1,1,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	 1,0,1,1,0,1,0,0,1,1,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,1,1,0,1,1,
+	 1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,0,1,
+	 1,1,0,1,1,0,0,1,1,1,1,1,0,0,0,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,
+	 0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,0,1,
+	 1,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,0,
+	 1,1,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,1,0,0,1,1,1,
+	 1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,1,1,
+	 1,1,0,1,0,0,1,0,1,1,1,0,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,
+	 1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,
+	 1,1,1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,1,
+	 0,0,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,0,1,1,1,1,0,0,1,1,
+	 0,1,0,1,1,0,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,
+	 1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,1,
+	 1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,
+	 1,1,0,0,1,0,1,1,0,0,1,1,0,1,1,0,1,1,1,1,0,1,1,0,0,1,1,0,1,0,
+	 0,0,0,0,1,0,1,1,0,1,1,0,1,0,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,
+	 1,1,0,1,1,1,0,0,0,0,0,0,1,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,1,1,
+	 1,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,1,1,0,0,1,
+	 0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,1,0,1,
+	 1,0,0,1,0,1,1,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,
+	 0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,1,0,1,1,0,1,0,
+	 1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,
+	 0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+	 0,1,1,1,0,1,0,0,0,0,1,0,0,1,1,0,1,1,1,1,1,0,0,1,1,0,1,1,1,1,
+	 1,0,0,1,0,0,1,1,0,1,1,0,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,
+	 0,1,1,1,0,0,1,1,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
+	 1,1,0,1,1,0,1,0,1,1,0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
+	 0,0,1,1,0,1,0,1,1,1,0,1,0,0,0,1,1,0,1,1,0,0,1,0,1,0,0,1,0,1 };
 	int pOutBuffer[99];
-	int n = FindPath(1, 1, 29, 29, pMap, 30, 30, pOutBuffer, 99);
+	int time = clock();
+	int n = FindPath(0, 0, 29, 29, pMap, 30, 30, pOutBuffer, 99);
 	Vector2D *coords = new Vector2D[n];
+	Vector2D prev = Vector2D(0, 0);
+	Vector2D last_block = Vector2D(0, 0);
 	coords = getAllTrueBlocks(n, pOutBuffer);
 	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
-		prev_x_block = 0, readCounter = 0, path_point = 0;
+		prev_x_block = 0, readCounter = 0, path_point = 0, bytes_read, mistakes = 0;
 	float prev_x = 0, prev_y = 0, speed;
+
 	clock_t last_read = clock();
-	bool going = false, reached_dest= false;
-	while (true) {
+	bool going = false, reached_dest = false;
+	int steer = 0;
+	for (int n = 0; n < 3; n++) {
+		cout << 3 - n << "\n";
+		Sleep(1000);
+	}
+	cout << "GO! \n";
+	clock_t start_read = clock();
+	clock_t travel_read;
+	while (path_point < n) {
 		Sleep(50);
 		pFile = fopen("C:\\dev\\output\\output.dat", "r");
-		int bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
+		bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
 		Vector2D block = currentBlock(in_arr[0], in_arr[1]);
 		Vector2D dir = Vector2D(in_arr[2], in_arr[3]);
 		fclose(pFile);
@@ -204,31 +269,499 @@ int main() {
 		dir.normalize();
 		//cout << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
 		float diffAngle = dir.angleTo(targetDist);
-		cout << diffAngle << "\n";
-		/*if (diffAngle > 0.1) {
-			if (dir.get_x() < targetDist.get_x()) {
-				cout << "LEFT \n";
-			}
-			else {
-				cout << "RIGHT \n";
-			}
-		}*/
+		//	cout << diffAngle << "\n";
+			/*if (diffAngle > 0.1) {
+				if (dir.get_x() < targetDist.get_x()) {
+					cout << "LEFT \n";
+				}
+				else {
+					cout << "RIGHT \n";
+				}
+			}*/
 		if ((block.get_x() == coords[path_point].get_x()) && (block.get_y() == coords[path_point].get_y())) {
 			path_point++;
-			/*Vector2D realCoords = getMidCoords(coords[path_point].get_x(), coords[path_point].get_y());
-			Vector2D targetDist = realCoords - mapCoords(in_arr[0], in_arr[1]);
-			//cout << "Pthalo white, Alizzeran Crimson: " << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
-			cout << dir.angleBetween(targetDist) << "\n";*/
 		}
-		/*if (readCounter == 2) {
-			going = speedControl(in_arr[0], in_arr[1], prev_x, prev_y, going);
-			prev_x = in_arr[0];
-			prev_y = in_arr[1];
+		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
+			last_block = block;
+			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
+				cout << "Ospie \n";
+				mistakes++;
+			}
+		}
+		if (readCounter == 2) {
+			if (steer != 0) {
+				going = speedControl(Vector2D(in_arr[0], in_arr[1]), prev, going, 10);
+			}
+			else {
+				going = speedControl(Vector2D(in_arr[0], in_arr[1]), prev, going, 40);
+			}
+			prev = Vector2D(in_arr[0], in_arr[1]);
 			readCounter = 0;
 		}
+		steer = steering(diffAngle, steer);
 		readCounter++;
-		last_read = clock();*/
+		last_read = clock();
 	}
+	travel_read = (clock() - start_read) / 1000;
+	cout << "Total Course Traversal Time: " << (travel_read / 60) << ":" << (travel_read % 60) << "\n";
+}
+
+void minPath() {
+	Sleep(2000);
+	string line;
+	FILE * pFile;
+	float in_arr[4];;
+	vector<string> sep;
+	unsigned char pMap[] =
+  { 0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+	int pOutBuffer[99];
+	cout << "D";
+	int n = FindPath(1, 0, 18, 12, pMap, 30, 30, pOutBuffer, 99);
+	cout << "E";
+	cout << n << "\n";
+	Vector2D *coords = new Vector2D[n];
+	Vector2D prev = Vector2D(0, 0);
+	Vector2D last_block = Vector2D(0, 0);
+	coords = getAllTrueBlocks(n, pOutBuffer);
+	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
+		prev_x_block = 0, readCounter = 0, path_point = 0, steer = 0, block_count = 1, bytes_read, mistakes = 0,
+		path_length = 0;
+	float prev_x = 0, prev_y = 0, speed;
+	bool going = false;
+	clock_t start_read = clock();
+	clock_t travel_read;
+	while (path_point < n) {
+		Sleep(50);
+		pFile = fopen("C:\\dev\\output\\output.dat", "r");
+		bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
+		Vector2D block = currentBlock(in_arr[0], in_arr[1]);
+		Vector2D dir = Vector2D(in_arr[2], in_arr[3]);
+		fclose(pFile);
+		Vector2D realCoords = getMidCoords(coords[path_point].get_x(), coords[path_point].get_y());
+		Vector2D targetDist = realCoords - mapCoords(in_arr[0], in_arr[1]);
+		targetDist.normalize();
+		dir.normalize();
+		//cout << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
+		float diffAngle = dir.angleTo(targetDist);
+		//	cout << diffAngle << "\n";
+			/*if (diffAngle > 0.1) {
+				if (dir.get_x() < targetDist.get_x()) {
+					cout << "LEFT \n";
+				}
+				else {
+					cout << "RIGHT \n";
+				}
+			}*/
+		if ((block.get_x() == coords[path_point].get_x()) && (block.get_y() == coords[path_point].get_y())) {
+			path_point++;
+			block_count++;
+		}
+		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
+			last_block = block;
+			path_length++;
+			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
+				cout << "Ospie \n";
+				mistakes++;
+			}
+		}
+		if (readCounter == 2) {
+			if (steer != 0) {
+				going = speedControl(Vector2D(in_arr[0], in_arr[1]), prev, going, 10);
+			}
+			else {
+				going = speedControl(Vector2D(in_arr[0], in_arr[1]), prev, going, 40);
+			}
+			prev = Vector2D(in_arr[0], in_arr[1]);
+			readCounter = 0;
+		}
+		steer = steering(diffAngle, steer);
+		readCounter++;
+	}
+	travel_read = (clock() - start_read) / 1000;
+	cout << "Total Course Traversal Time: " << (travel_read / 60) << ":" << (travel_read % 60) << "\n";
+}
+
+
+void memory() {
+	string line;
+	FILE * pFile;
+	float in_arr[4];
+	vector<string> sep;
+	Vector2D targets[10] = {Vector2D(0,0)};
+	Vector2D targetVec[5] = { Vector2D(6,5), Vector2D(8,5), Vector2D(10,5), Vector2D(12,5), Vector2D(14,5) };
+	srand(time(NULL));
+	cout << "Target Points: \n";
+	for (int i = 0; i < 10; i++) {
+		int point = rand() % 5;
+		targets[i] = targetVec[point];
+		cout << point+1 << "\n";
+	}
+	Sleep(2000);
+	int targPoint = 0;
+	unsigned char pMap[] =
+  { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+	int pOutBuffer[20];
+	int n = FindPath(6, 2, targets[targPoint].get_x(), targets[targPoint].get_y(), pMap, 30, 30, pOutBuffer, 99);
+	Vector2D *coords = new Vector2D[n];
+	Vector2D prev = Vector2D(0, 0);
+	Vector2D last_block = Vector2D(0, 0);
+	coords = getAllTrueBlocks(n, pOutBuffer);
+	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
+		prev_x_block = 0, readCounter = 0, path_point = 0, steer = 0, block_count = 1, bytes_read, mistakes = 0;
+	float prev_x = 0, prev_y = 0, speed;
+	bool going = false;
+	cout << "Get Ready... \n";
+	Sleep(2000);
+	for (int n = 0; n < 3; n++) {
+		cout << 3 - n << "\n";
+		Sleep(1000);
+	}
+	cout << "GO! \n";
+	while (targPoint < 10) {
+		Sleep(50);
+		pFile = fopen("C:\\dev\\output\\output.dat", "r");
+		bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
+		Vector2D block = currentBlock(in_arr[0], in_arr[1]);
+		Vector2D dir = Vector2D(in_arr[2], in_arr[3]);
+		fclose(pFile);
+		Vector2D realCoords = getMidCoords(coords[path_point].get_x(), coords[path_point].get_y());
+		Vector2D targetDist = realCoords - mapCoords(in_arr[0], in_arr[1]);
+		targetDist.normalize();
+		dir.normalize();
+		float diffAngle = dir.angleTo(targetDist);
+		if ((block.get_x() == coords[path_point].get_x()) && (block.get_y() == coords[path_point].get_y())) {
+			path_point++;
+		}
+		if (readCounter == 2) {
+			if (steer != 0) {
+				going = speedControl(Vector2D(in_arr[0], in_arr[1]), prev, going, 10);
+			}
+			else {
+				going = speedControl(Vector2D(in_arr[0], in_arr[1]), prev, going, 40);
+			}
+			prev = Vector2D(in_arr[0], in_arr[1]);
+			readCounter = 0;
+		}
+		steer = steering(diffAngle, steer);
+		readCounter++;
+		// Check if the vehicle is either on an obstacle or the wrong target block
+		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
+			last_block = block;
+			if ((pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) ||
+				((block.get_y() == 5) && (block.get_x() != targets[targPoint].get_x()))) {
+				cout << "Ospie \n";
+				mistakes++;
+			}
+		}
+		if ((block.get_x() == targets[targPoint].get_x()) && (block.get_y() == targets[targPoint].get_y())) {
+			targPoint++;
+			if (targPoint < 10) {
+				path_point = 0;
+				n = FindPath(block.get_x(), block.get_y(), targets[targPoint].get_x(), targets[targPoint].get_y(), pMap, 30, 30, pOutBuffer, 20);
+				coords = getAllTrueBlocks(n, pOutBuffer);
+			}
+		}
+	}
+
+}
+
+void memoryManual() {
+	string line;
+	FILE * pFile;
+	float in_arr[4];
+	vector<string> sep;
+	Vector2D targets[10] = { Vector2D(0,0) };
+	Vector2D targetVec[5] = { Vector2D(6,5), Vector2D(8,5), Vector2D(10,5), Vector2D(12,5), Vector2D(14,5) };
+	Vector2D last_block = Vector2D(0, 0);
+	unsigned char pMap[] =
+	{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+	cout << "Target Points: \n";
+	srand(time(NULL));
+	for (int i = 0; i < 10; i++) {
+		int point = rand() % 5;
+		targets[i] = targetVec[point];
+		cout << point + 1 << "\n";
+	}
+	Sleep(4000);
+	for (int j = 0; j < 100; j++) {
+		cout << "~ \n";
+	}
+	for (int n = 0; n < 3; n++) {
+		cout << 3 - n << "\n";
+		Sleep(1000);
+	}
+	cout << "GO! \n";
+	clock_t start_read = clock();
+	clock_t travel_read;
+	int targPoint = 0;
+	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
+		prev_x_block = 0, readCounter = 0, path_point = 0, steer = 0, block_count = 1, bytes_read, mistakes = 0;
+	float prev_x = 0, prev_y = 0, speed;
+	bool going = false;
+	while (targPoint < 10) {
+		Sleep(50);
+		pFile = fopen("C:\\dev\\output\\output.dat", "r");
+		bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
+		Vector2D block = currentBlock(in_arr[0], in_arr[1]);
+		fclose(pFile);
+		// Check if the vehicle is either on an obstacle or the wrong target block
+		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
+			last_block = block;
+			if ((pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) ||
+				((block.get_y() == 5) && (block.get_x() != targets[targPoint].get_x()))) {
+				cout << "Ospie \n";
+				mistakes++;
+			}
+		}
+		if ((block.get_x() == targets[targPoint].get_x()) && (block.get_y() == targets[targPoint].get_y())) {
+			cout << "Target " << targPoint << " found! \n";
+			targPoint++;
+		}
+	}
+	travel_read = (clock() - start_read) / 1000;
+	cout << "Total Course Traversal Time: " << (travel_read / 60) << ":" << (travel_read % 60) << "\n";
+}
+
+void minPathManual() {
+	Sleep(2000);
+	string line;
+	FILE * pFile;
+	float in_arr[4];
+	vector<string> sep;
+	unsigned char pMap[] =
+	{ 0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
+		prev_x_block = 0, readCounter = 0, path_point = 0, path_length = 0, block_count = 1, bytes_read, mistakes = 0;
+	float prev_x = 0, prev_y = 0, speed;
+	bool complete = false;
+	clock_t last_read = clock();
+	Vector2D last_block = Vector2D(0, 0);
+	cout << "Get Ready... \n";
+	Sleep(2000);
+	for (int n = 0; n < 3; n++) {
+		cout << 3 - n << "\n";
+		Sleep(1000);
+	}
+	cout << "GO! \n";
+	while (!complete) {
+		Sleep(50);
+		pFile = fopen("C:\\dev\\output\\output.dat", "r");
+		bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
+		Vector2D block = currentBlock(in_arr[0], in_arr[1]);
+		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
+			last_block = block;
+			path_length++;
+			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
+				cout << "Ospie \n";
+				mistakes++;
+			}
+		}
+		fclose(pFile);
+		if ((block.get_x() == 18) && (block.get_y() == 12)) {
+			complete = true;
+		}
+	}
+	cout << "Blocks Covered: " << path_length << "\n";
+}
+
+void mazeManual() {
+	string line;
+	FILE * pFile;
+	float in_arr[4];
+	vector<string> sep;
+	unsigned char pMap[] =
+	{ 1,0,0,1,1,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,
+	  1,1,0,0,0,1,1,1,1,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,
+	  1,0,1,1,0,1,0,0,1,1,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,1,1,0,1,1,
+	  1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,0,1,
+	  1,1,0,1,1,0,0,1,1,1,1,1,0,0,0,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,
+	  0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,0,1,
+	  1,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,0,
+	  1,1,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,1,0,0,1,1,1,
+	  1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,1,1,
+	  1,1,0,1,0,0,1,0,1,1,1,0,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,
+	  1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,
+	  1,1,1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,1,
+	  0,0,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,0,1,1,1,1,0,0,1,1,
+	  0,1,0,1,1,0,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,
+	  1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,1,
+	  1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,
+	  1,1,0,0,1,0,1,1,0,0,1,1,0,1,1,0,1,1,1,1,0,1,1,0,0,1,1,0,1,0,
+	  0,0,0,0,1,0,1,1,0,1,1,0,1,0,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,
+	  1,1,0,1,1,1,0,0,0,0,0,0,1,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,1,1,
+	  1,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,1,1,0,0,1,
+	  0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,1,0,1,
+	  1,0,0,1,0,1,1,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,
+	  0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,1,0,1,1,0,1,0,
+	  1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,
+	  0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+	  0,1,1,1,0,1,0,0,0,0,1,0,0,1,1,0,1,1,1,1,1,0,0,1,1,0,1,1,1,1,
+	  1,0,0,1,0,0,1,1,0,1,1,0,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,
+	  0,1,1,1,0,0,1,1,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
+	  1,1,0,1,1,0,1,0,1,1,0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
+	  0,0,1,1,0,1,0,1,1,1,0,1,0,0,0,1,1,0,1,1,0,0,1,0,1,0,0,1,0,1 };
+	int pOutBuffer[99];
+	int n = FindPath(0, 0, 29, 29, pMap, 30, 30, pOutBuffer, 99);
+	Vector2D *coords = new Vector2D[n];
+	Vector2D prev = Vector2D(0, 0);
+	Vector2D last_block = Vector2D(0, 0);
+	coords = getAllTrueBlocks(n, pOutBuffer);
+	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
+		prev_x_block = 0, readCounter = 0, path_point = 0, bytes_read, mistakes = 0;
+	float prev_x = 0, prev_y = 0, speed;
+	cout << "Get Ready... \n";
+	Sleep(2000);
+	for (int n = 0; n < 3; n++) {
+		cout << 3 - n << "\n";
+		Sleep(1000);
+	}
+	cout << "GO! \n";
+	clock_t start_read = clock();
+	clock_t travel_read;
+	bool complete = false;
+	int steer = 0;
+	while (!complete) {
+		Sleep(50);
+		pFile = fopen("C:\\dev\\output\\output.dat", "r");
+		bytes_read = fread(in_arr, sizeof(float), sizeof(in_arr), pFile);
+		Vector2D block = currentBlock(in_arr[0], in_arr[1]);
+		Vector2D dir = Vector2D(in_arr[2], in_arr[3]);
+		fclose(pFile);
+		if ((block.get_x() == 29) && (block.get_y() == 29)) {
+			complete = true;
+		}
+		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
+			last_block = block;
+			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
+				cout << "Ospie \n";
+				mistakes++;
+			}
+		}
+	}
+	travel_read = (clock() - start_read)/1000;
+	cout << "Total Course Traversal Time: " << (travel_read/60) << ":" << (travel_read % 60) << "\n";
+	cout << "Obstacles Hit: " << mistakes << "\n";
+}
+
+int main() {
+	memory();
+	waitToFinish();
 	return 0;
 }
 
