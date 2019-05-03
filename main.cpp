@@ -59,7 +59,7 @@ vector<string> str_split(string str, char delimiter) {
 
 void waitToFinish() {
 	char user_exit;
-	cout << "Press any key to exit:";
+	std::cout << "Press any key to exit:";
 	while (!kbhit())
 	{
 	}
@@ -120,7 +120,7 @@ Vector2D getMidCoords(float x, float y) {
 
 
 bool speedControl(Vector2D curr, Vector2D prev, bool going, float target) {
-	//cout << curr.get_x() << ", " << curr.get_y() << " | " << prev.get_x() << ", " << prev.get_y() << " \n";
+	//std::cout << curr.get_x() << ", " << curr.get_y() << " | " << prev.get_x() << ", " << prev.get_y() << " \n";
 	float speed = sqrt(pow((curr.get_x() - prev.get_x()), 2) + pow((curr.get_y() - prev.get_y()), 2)) / 1000 * 36000;
 	bool goes = going;
 	if ((speed < target) && (!going)) {
@@ -157,7 +157,7 @@ int steering(float angle,int steering) {
 			ShellExecute(0, openw, rightw, NULL, NULL, SW_SHOWNORMAL);
 		}
 		else {
-			//cout << "Left Down \n";
+			//std::cout << "Left Down \n";
 			if (steering == 1) {
 				ShellExecute(0, openw, offw, NULL, NULL, SW_SHOWNORMAL);
 			}
@@ -205,39 +205,41 @@ void maze() {
 	float in_arr[4];
 	vector<string> sep;
 	unsigned char pMap[] =
-   { 1,0,0,1,1,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,
-	 1,1,0,0,0,1,1,1,1,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,
-	 1,0,1,1,0,1,0,0,1,1,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,1,1,0,1,1,
-	 1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,0,1,
-	 1,1,0,1,1,0,0,1,1,1,1,1,0,0,0,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,
-	 0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,0,1,
-	 1,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,0,
-	 1,1,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,1,0,0,1,1,1,
-	 1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,1,1,
-	 1,1,0,1,0,0,1,0,1,1,1,0,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,
-	 1,1,1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,1,
-	 0,0,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,0,1,1,1,1,0,0,1,1,
-	 0,1,0,1,1,0,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,
-	 1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,1,
-	 1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,
-	 1,1,0,0,1,0,1,1,0,0,1,1,0,1,1,0,1,1,1,1,0,1,1,0,0,1,1,0,1,0,
-	 0,0,0,0,1,0,1,1,0,1,1,0,1,0,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,
-	 1,1,0,1,1,1,0,0,0,0,0,0,1,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,1,1,
-	 1,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,1,1,0,0,1,
-	 0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,1,0,1,
-	 1,0,0,1,0,1,1,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,
-	 0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,1,0,1,1,0,1,0,
-	 1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,
-	 0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-	 0,1,1,1,0,1,0,0,0,0,1,0,0,1,1,0,1,1,1,1,1,0,0,1,1,0,1,1,1,1,
-	 1,0,0,1,0,0,1,1,0,1,1,0,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,
-	 0,1,1,1,0,0,1,1,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
-	 1,1,0,1,1,0,1,0,1,1,0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
-	 0,0,1,1,0,1,0,1,1,1,0,1,0,0,0,1,1,0,1,1,0,0,1,0,1,0,0,1,0,1 };
+	{ 1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1,1,1,1,1,
+ 0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,
+ 1,1,1,1,1,0,0,1,1,1,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,1,1,0,0,0,
+ 1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,0,0,1,1,1,1,0,1,
+ 0,0,1,0,0,0,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,0,0,1,0,1,
+ 1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,1,1,0,0,0,1,0,0,1,1,1,1,
+ 0,0,1,1,0,0,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,0,1,
+ 1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,
+ 1,1,0,0,0,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,1,1,1,0,
+ 0,0,0,1,0,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,
+ 1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,0,1,1,0,1,0,1,1,1,1,1,
+ 1,0,1,0,0,1,0,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,0,1,0,0,1,1,0,1,
+ 1,1,1,0,1,0,1,1,0,1,0,0,0,1,0,0,1,1,1,0,1,1,0,1,1,1,1,0,0,1,
+ 0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,1,
+ 1,1,0,1,0,0,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,1,1,0,1,0,
+ 0,0,0,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,1,1,0,1,
+ 1,1,1,1,1,0,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,
+ 0,1,0,0,1,1,1,1,0,0,1,1,0,0,0,1,0,1,1,1,0,1,1,0,1,1,1,0,0,1,
+ 1,0,0,0,1,0,1,1,0,1,0,0,0,1,1,1,1,0,1,1,1,0,1,0,0,1,0,1,1,0,
+ 0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,1,0,0,1,1,0,1,0,1,
+ 1,0,1,1,1,1,1,1,0,0,1,1,0,0,0,0,1,1,0,1,0,0,0,0,0,0,1,1,0,0,
+ 1,1,0,1,0,0,1,0,0,0,1,1,1,1,0,1,1,1,1,1,1,0,0,0,1,1,0,1,1,0,
+ 1,1,0,1,1,0,0,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,0,
+ 1,1,1,1,0,0,1,0,0,1,0,1,0,1,0,1,1,0,0,1,0,1,0,1,1,1,1,1,1,0,
+ 1,0,1,1,1,1,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,1,0,0,1,0,0,1,
+ 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,0,1,0,0,1,1,1,1,
+ 1,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,0,1,1,0,1,1,1,1,0,0,1,1,0,0,
+ 1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,0,0,0,0,1,1,0,1,1,1,0,0,1,1,
+ 1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,0,
+ 1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1 };
 	int pOutBuffer[99];
-	int time = clock();
 	int n = FindPath(0, 0, 29, 29, pMap, 30, 30, pOutBuffer, 99);
+	clock_t start_pathfind = clock();
+	clock_t end_pathfind = (clock() - start_pathfind);
+	std::cout << "Total Course Pathfinding Time: " << (end_pathfind) << "ms \n";
 	Vector2D *coords = new Vector2D[n];
 	Vector2D prev = Vector2D(0, 0);
 	Vector2D last_block = Vector2D(0, 0);
@@ -250,10 +252,10 @@ void maze() {
 	bool going = false, reached_dest = false;
 	int steer = 0;
 	for (int n = 0; n < 3; n++) {
-		cout << 3 - n << "\n";
+		std::cout << 3 - n << "\n";
 		Sleep(1000);
 	}
-	cout << "GO! \n";
+	std::cout << "GO! \n";
 	clock_t start_read = clock();
 	clock_t travel_read;
 	while (path_point < n) {
@@ -267,15 +269,15 @@ void maze() {
 		Vector2D targetDist = realCoords - mapCoords(in_arr[0], in_arr[1]);
 		targetDist.normalize();
 		dir.normalize();
-		//cout << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
+		//std::cout << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
 		float diffAngle = dir.angleTo(targetDist);
-		//	cout << diffAngle << "\n";
+		//	std::cout << diffAngle << "\n";
 			/*if (diffAngle > 0.1) {
 				if (dir.get_x() < targetDist.get_x()) {
-					cout << "LEFT \n";
+					std::cout << "LEFT \n";
 				}
 				else {
-					cout << "RIGHT \n";
+					std::cout << "RIGHT \n";
 				}
 			}*/
 		if ((block.get_x() == coords[path_point].get_x()) && (block.get_y() == coords[path_point].get_y())) {
@@ -284,7 +286,7 @@ void maze() {
 		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
 			last_block = block;
 			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
-				cout << "Ospie \n";
+				std::cout << "Ospie \n";
 				mistakes++;
 			}
 		}
@@ -302,8 +304,10 @@ void maze() {
 		readCounter++;
 		last_read = clock();
 	}
-	travel_read = (clock() - start_read) / 1000;
-	cout << "Total Course Traversal Time: " << (travel_read / 60) << ":" << (travel_read % 60) << "\n";
+	travel_read = (clock() - start_read);
+	std::cout << "Total Course Traversal Time: " << (travel_read) << "ms \n";
+	std::cout << "Mistakes:  " << mistakes << "\n";
+	Sleep(60000);
 }
 
 void minPath() {
@@ -344,10 +348,13 @@ void minPath() {
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 	int pOutBuffer[99];
-	cout << "D";
+	std::cout << "D";
+	clock_t start_pathfind = clock();
 	int n = FindPath(1, 0, 18, 12, pMap, 30, 30, pOutBuffer, 99);
-	cout << "E";
-	cout << n << "\n";
+	clock_t end_pathfind = (clock() - start_pathfind);
+	std::cout << "Total Course Pathfinding Time: " << (end_pathfind) << "ms \n";
+	std::cout << "E";
+	std::cout << n << "\n";
 	Vector2D *coords = new Vector2D[n];
 	Vector2D prev = Vector2D(0, 0);
 	Vector2D last_block = Vector2D(0, 0);
@@ -370,15 +377,15 @@ void minPath() {
 		Vector2D targetDist = realCoords - mapCoords(in_arr[0], in_arr[1]);
 		targetDist.normalize();
 		dir.normalize();
-		//cout << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
+		//std::cout << targetDist.get_x() << ", " << targetDist.get_y() << "\n";
 		float diffAngle = dir.angleTo(targetDist);
-		//	cout << diffAngle << "\n";
+		//	std::cout << diffAngle << "\n";
 			/*if (diffAngle > 0.1) {
 				if (dir.get_x() < targetDist.get_x()) {
-					cout << "LEFT \n";
+					std::cout << "LEFT \n";
 				}
 				else {
-					cout << "RIGHT \n";
+					std::cout << "RIGHT \n";
 				}
 			}*/
 		if ((block.get_x() == coords[path_point].get_x()) && (block.get_y() == coords[path_point].get_y())) {
@@ -389,7 +396,7 @@ void minPath() {
 			last_block = block;
 			path_length++;
 			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
-				cout << "Ospie \n";
+				std::cout << "Ospie \n";
 				mistakes++;
 			}
 		}
@@ -406,8 +413,11 @@ void minPath() {
 		steer = steering(diffAngle, steer);
 		readCounter++;
 	}
-	travel_read = (clock() - start_read) / 1000;
-	cout << "Total Course Traversal Time: " << (travel_read / 60) << ":" << (travel_read % 60) << "\n";
+	travel_read = (clock() - start_read);
+	std::cout << "Total Course Traversal Time: " << (travel_read) << "ms \n";
+	std::cout << "Mistakes:  " << mistakes << "\n";
+	std::cout << "Path Length:  " << path_length << "\n";
+	Sleep(60000);
 }
 
 
@@ -418,12 +428,12 @@ void memory() {
 	vector<string> sep;
 	Vector2D targets[10] = {Vector2D(0,0)};
 	Vector2D targetVec[5] = { Vector2D(6,5), Vector2D(8,5), Vector2D(10,5), Vector2D(12,5), Vector2D(14,5) };
-	srand(time(NULL));
-	cout << "Target Points: \n";
+	srand(194011);
+	std::cout << "Target Points: \n";
 	for (int i = 0; i < 10; i++) {
 		int point = rand() % 5;
 		targets[i] = targetVec[point];
-		cout << point+1 << "\n";
+		std::cout << point+1 << "\n";
 	}
 	Sleep(2000);
 	int targPoint = 0;
@@ -459,22 +469,28 @@ void memory() {
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 	int pOutBuffer[20];
+	float prev_x = 0, prev_y = 0, speed;
+	bool going = false;
+	std::cout << "Get Ready... \n";
+	Sleep(2000);
+	for (int n = 0; n < 3; n++) {
+		std::cout << 3 - n << "\n";
+		Sleep(1000);
+	}
+	std::cout << "GO! \n";
+	clock_t start_pathfind = clock();
+	clock_t start_read = clock();
+	clock_t travel_read;
 	int n = FindPath(6, 2, targets[targPoint].get_x(), targets[targPoint].get_y(), pMap, 30, 30, pOutBuffer, 99);
+	clock_t end_pathfind = (clock() - start_pathfind);
+	std::cout << "Total Course Pathfinding Time: " << (end_pathfind) << "ms \n";
+	Sleep(10000);
 	Vector2D *coords = new Vector2D[n];
 	Vector2D prev = Vector2D(0, 0);
 	Vector2D last_block = Vector2D(0, 0);
 	coords = getAllTrueBlocks(n, pOutBuffer);
 	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
 		prev_x_block = 0, readCounter = 0, path_point = 0, steer = 0, block_count = 1, bytes_read, mistakes = 0;
-	float prev_x = 0, prev_y = 0, speed;
-	bool going = false;
-	cout << "Get Ready... \n";
-	Sleep(2000);
-	for (int n = 0; n < 3; n++) {
-		cout << 3 - n << "\n";
-		Sleep(1000);
-	}
-	cout << "GO! \n";
 	while (targPoint < 10) {
 		Sleep(50);
 		pFile = fopen("C:\\dev\\output\\output.dat", "r");
@@ -507,7 +523,7 @@ void memory() {
 			last_block = block;
 			if ((pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) ||
 				((block.get_y() == 5) && (block.get_x() != targets[targPoint].get_x()))) {
-				cout << "Ospie \n";
+				std::cout << "Ospie \n";
 				mistakes++;
 			}
 		}
@@ -520,7 +536,10 @@ void memory() {
 			}
 		}
 	}
-
+	travel_read = (clock() - start_read);
+	std::cout << "Total Course Traversal Time: " << (travel_read) << "ms \n";
+	std::cout << "Mistakes:  " << mistakes << "\n";
+	Sleep(60000);
 }
 
 void memoryManual() {
@@ -531,6 +550,7 @@ void memoryManual() {
 	Vector2D targets[10] = { Vector2D(0,0) };
 	Vector2D targetVec[5] = { Vector2D(6,5), Vector2D(8,5), Vector2D(10,5), Vector2D(12,5), Vector2D(14,5) };
 	Vector2D last_block = Vector2D(0, 0);
+	Sleep(2000);
 	unsigned char pMap[] =
 	{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	  1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -562,22 +582,29 @@ void memoryManual() {
 	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
-	cout << "Target Points: \n";
-	srand(time(NULL));
+	std::cout << "Target Points: \n";
+	srand(194011);
+	int lastPt = -1;
 	for (int i = 0; i < 10; i++) {
 		int point = rand() % 5;
+		if (i > 1) {
+			while (point == lastPt) {
+				point = rand() % 5;
+			}
+		}
 		targets[i] = targetVec[point];
-		cout << point + 1 << "\n";
+		lastPt = point;
+		std::cout << point + 1 << "\n";
 	}
 	Sleep(4000);
 	for (int j = 0; j < 100; j++) {
-		cout << "~ \n";
+		std::cout << "~ \n";
 	}
 	for (int n = 0; n < 3; n++) {
-		cout << 3 - n << "\n";
+		std::cout << 3 - n << "\n";
 		Sleep(1000);
 	}
-	cout << "GO! \n";
+	std::cout << "GO! \n";
 	clock_t start_read = clock();
 	clock_t travel_read;
 	int targPoint = 0;
@@ -596,17 +623,19 @@ void memoryManual() {
 			last_block = block;
 			if ((pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) ||
 				((block.get_y() == 5) && (block.get_x() != targets[targPoint].get_x()))) {
-				cout << "Ospie \n";
+				std::cout << "Ospie \n";
 				mistakes++;
 			}
 		}
 		if ((block.get_x() == targets[targPoint].get_x()) && (block.get_y() == targets[targPoint].get_y())) {
-			cout << "Target " << targPoint << " found! \n";
+			std::cout << "Target " << targPoint << " found! \n";
 			targPoint++;
 		}
 	}
-	travel_read = (clock() - start_read) / 1000;
-	cout << "Total Course Traversal Time: " << (travel_read / 60) << ":" << (travel_read % 60) << "\n";
+	travel_read = (clock() - start_read);
+	std::cout << "Total Course Traversal Time: " << (travel_read) << "ms \n";
+	std::cout << "Mistakes:  " << mistakes << "\n";
+	Sleep(60000);
 }
 
 void minPathManual() {
@@ -652,13 +681,13 @@ void minPathManual() {
 	bool complete = false;
 	clock_t last_read = clock();
 	Vector2D last_block = Vector2D(0, 0);
-	cout << "Get Ready... \n";
+	std::cout << "Get Ready... \n";
 	Sleep(2000);
 	for (int n = 0; n < 3; n++) {
-		cout << 3 - n << "\n";
+		std::cout << 3 - n << "\n";
 		Sleep(1000);
 	}
-	cout << "GO! \n";
+	std::cout << "GO! \n";
 	while (!complete) {
 		Sleep(50);
 		pFile = fopen("C:\\dev\\output\\output.dat", "r");
@@ -667,8 +696,9 @@ void minPathManual() {
 		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
 			last_block = block;
 			path_length++;
+			cout << "New \n";
 			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
-				cout << "Ospie \n";
+				std::cout << "Ospie \n";
 				mistakes++;
 			}
 		}
@@ -677,7 +707,9 @@ void minPathManual() {
 			complete = true;
 		}
 	}
-	cout << "Blocks Covered: " << path_length << "\n";
+	std::cout << "Blocks Covered: " << path_length-1 << "\n";
+	std::cout << "Mistakes:  " << mistakes << "\n";
+	Sleep(60000);
 }
 
 void mazeManual() {
@@ -686,36 +718,36 @@ void mazeManual() {
 	float in_arr[4];
 	vector<string> sep;
 	unsigned char pMap[] =
-	{ 1,0,0,1,1,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,
-	  1,1,0,0,0,1,1,1,1,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,
-	  1,0,1,1,0,1,0,0,1,1,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,1,1,0,1,1,
-	  1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,0,1,
-	  1,1,0,1,1,0,0,1,1,1,1,1,0,0,0,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,
-	  0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,0,1,
-	  1,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,0,
-	  1,1,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,1,0,0,1,1,1,
-	  1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,1,1,0,1,1,1,1,
-	  1,1,0,1,0,0,1,0,1,1,1,0,1,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,
-	  1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,
-	  1,1,1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,1,
-	  0,0,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,0,1,1,1,1,0,0,1,1,
-	  0,1,0,1,1,0,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,1,0,
-	  1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,1,
-	  1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,
-	  1,1,0,0,1,0,1,1,0,0,1,1,0,1,1,0,1,1,1,1,0,1,1,0,0,1,1,0,1,0,
-	  0,0,0,0,1,0,1,1,0,1,1,0,1,0,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,
-	  1,1,0,1,1,1,0,0,0,0,0,0,1,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,1,1,
-	  1,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,1,1,0,0,1,
-	  0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,1,1,1,0,1,0,0,0,1,0,1,1,0,1,
-	  1,0,0,1,0,1,1,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,
-	  0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,1,0,1,1,0,1,0,
-	  1,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0,
-	  0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-	  0,1,1,1,0,1,0,0,0,0,1,0,0,1,1,0,1,1,1,1,1,0,0,1,1,0,1,1,1,1,
-	  1,0,0,1,0,0,1,1,0,1,1,0,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,
-	  0,1,1,1,0,0,1,1,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
-	  1,1,0,1,1,0,1,0,1,1,0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,
-	  0,0,1,1,0,1,0,1,1,1,0,1,0,0,0,1,1,0,1,1,0,0,1,0,1,0,0,1,0,1 };
+	{ 1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1,1,1,1,1,
+ 0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,
+ 1,1,1,1,1,0,0,1,1,1,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,1,1,0,0,0,
+ 1,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,1,1,1,0,0,1,1,1,1,0,1,
+ 0,0,1,0,0,0,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,0,0,1,0,1,
+ 1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,1,1,0,0,0,1,0,0,1,1,1,1,
+ 0,0,1,1,0,0,1,1,1,1,0,0,0,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,0,1,
+ 1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,
+ 1,1,0,0,0,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,1,1,1,0,
+ 0,0,0,1,0,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,
+ 1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,0,1,1,0,1,0,1,1,1,1,1,
+ 1,0,1,0,0,1,0,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,0,1,0,0,1,1,0,1,
+ 1,1,1,0,1,0,1,1,0,1,0,0,0,1,0,0,1,1,1,0,1,1,0,1,1,1,1,0,0,1,
+ 0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,1,
+ 1,1,0,1,0,0,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,0,1,1,0,1,0,
+ 0,0,0,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,1,1,0,1,
+ 1,1,1,1,1,0,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,
+ 0,1,0,0,1,1,1,1,0,0,1,1,0,0,0,1,0,1,1,1,0,1,1,0,1,1,1,0,0,1,
+ 1,0,0,0,1,0,1,1,0,1,0,0,0,1,1,1,1,0,1,1,1,0,1,0,0,1,0,1,1,0,
+ 0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,1,0,0,1,1,0,1,0,1,
+ 1,0,1,1,1,1,1,1,0,0,1,1,0,0,0,0,1,1,0,1,0,0,0,0,0,0,1,1,0,0,
+ 1,1,0,1,0,0,1,0,0,0,1,1,1,1,0,1,1,1,1,1,1,0,0,0,1,1,0,1,1,0,
+ 1,1,0,1,1,0,0,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,0,
+ 1,1,1,1,0,0,1,0,0,1,0,1,0,1,0,1,1,0,0,1,0,1,0,1,1,1,1,1,1,0,
+ 1,0,1,1,1,1,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,1,1,0,0,1,0,0,1,
+ 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,1,0,1,0,0,1,1,1,1,
+ 1,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,0,1,1,0,1,1,1,1,0,0,1,1,0,0,
+ 1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,0,0,0,0,1,1,0,1,1,1,0,0,1,1,
+ 1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,0,
+ 1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1 };
 	int pOutBuffer[99];
 	int n = FindPath(0, 0, 29, 29, pMap, 30, 30, pOutBuffer, 99);
 	Vector2D *coords = new Vector2D[n];
@@ -725,13 +757,13 @@ void mazeManual() {
 	int x_block = 0, y_block = 0, courseWidth = 1200, courseHeight = 1200,
 		prev_x_block = 0, readCounter = 0, path_point = 0, bytes_read, mistakes = 0;
 	float prev_x = 0, prev_y = 0, speed;
-	cout << "Get Ready... \n";
+	std::cout << "Get Ready... \n";
 	Sleep(2000);
 	for (int n = 0; n < 3; n++) {
-		cout << 3 - n << "\n";
+		std::cout << 3 - n << "\n";
 		Sleep(1000);
 	}
-	cout << "GO! \n";
+	std::cout << "GO! \n";
 	clock_t start_read = clock();
 	clock_t travel_read;
 	bool complete = false;
@@ -749,19 +781,20 @@ void mazeManual() {
 		if ((block.get_x() != last_block.get_x()) || (block.get_y() != last_block.get_y())) {
 			last_block = block;
 			if (pMap[getBufArrPos(block.get_x(), block.get_y())] == 0) {
-				cout << "Ospie \n";
+				std::cout << "Ospie \n";
 				mistakes++;
 			}
 		}
 	}
-	travel_read = (clock() - start_read)/1000;
-	cout << "Total Course Traversal Time: " << (travel_read/60) << ":" << (travel_read % 60) << "\n";
-	cout << "Obstacles Hit: " << mistakes << "\n";
+	travel_read = (clock() - start_read);
+	std::cout << "Total Course Traversal Time: " << (travel_read) << "ms \n";
+	std::cout << "Obstacles Hit: " << mistakes << "\n";
+	Sleep(60000);
 }
 
 int main() {
-	memory();
-	waitToFinish();
+	maze();
+	Sleep(60000);
 	return 0;
 }
 
@@ -771,13 +804,13 @@ void PrintSolution(int n, int* pOutBuffer)
 {
 	if (n == -1)
 	{
-		std::cout << "no path found!" << std::endl;
+		std::std::cout << "no path found!" << std::endl;
 		return;
 	}
 
-	std::cout << "n Elements : " << n << std::endl;
+	std::std::cout << "n Elements : " << n << std::endl;
 	for (int i = 0; i < n; ++i)
-		std::cout << "move : " << pOutBuffer[i] << std::endl;
+		std::std::cout << "move : " << pOutBuffer[i] << std::endl;
 }
 void Test5()
 {
